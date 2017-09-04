@@ -1,0 +1,29 @@
+{
+  "name": "homebridge-awox",
+  "version": "1.0.0",
+  "description": "control awox smartlight with homebridge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragouf/homebridge-awox.git"
+  },
+  "keywords": [
+    "homebridge",
+    "awox",
+    "smartlight",
+    "lamp",
+    "bluetooth"
+  ],
+  "author": "dragouf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dragouf/homebridge-awox/issues"
+  },
+  "homepage": "https://github.com/dragouf/homebridge-awox#readme",
+  "dependencies": {
+    "noble": "^1.8.1"
+  }
+}
