@@ -23,7 +23,7 @@ function AwoxAccessory(log, config) {
   this.config = config || {};
   this.name = config["name"];
   this.lampMac = config["lampMac"];
-  this.service = new Service.lightbulb(this.name);
+  this.service = new Service.LightBulb(this.name);
 
   this.on = false;
   this.brightness = 0;
