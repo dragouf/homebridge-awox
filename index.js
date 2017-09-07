@@ -147,6 +147,6 @@ AwoxAccessory.prototype._decToHex = function(d, padding) {
     return hex;
 }
 
-FakeBulbAccessory.prototype.getServices = function() {
+AwoxAccessory.prototype.getServices = function() {
     return [lightbulbService];
 }
