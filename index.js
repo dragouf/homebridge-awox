@@ -1,5 +1,5 @@
 var Accessory, Service, Characteristic, UUIDGen;
-var noble = require('noble');
+var AwoxSmartLight = require('awox-smartlight');
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -12,7 +12,7 @@ module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
-  
+
   // For platform plugin to be considered as dynamic platform plugin,
   // registerPlatform(pluginName, platformName, constructor, dynamic), dynamic must be true
   homebridge.registerPlatform("homebridge-awox", "Awox", AwoxAccessory, true);
@@ -20,71 +20,133 @@ module.exports = function(homebridge) {
 
 function AwoxAccessory(log, config) {
   this.log = log;
+  this.config = config || {};
   this.name = config["name"];
-  
-  this.service = new Service.LockMechanism(this.name);
-  
+  this.lampMac = config["lampMac"];
+  this.service = new Service.lightbulb(this.name);
+
+  this.on = false;
+  this.brightness = 0;
+  this.hue = 0;
+  this.saturation = 0;
+
   this.service
-    .getCharacteristic(Characteristic.LockCurrentState)
-    .on('get', this.getState.bind(this));
-  
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getPowerOn.bind(this))
+    .on('set', this.setPowerOn.bind(this));
+
   this.service
-    .getCharacteristic(Characteristic.LockTargetState)
-    .on('get', this.getState.bind(this))
-    .on('set', this.setState.bind(this));
+    .getCharacteristic(Characteristic.Brightness)
+    .on('get', this.getBrightness.bind(this))
+    .on('set', this.setBrightness.bind(this));
+  this.service
+    .getCharacteristic(Characteristic.Hue)
+    .on('get', this.getHue.bind(this))
+    .on('set', this.setHue.bind(this));
+  this.service
+    .getCharacteristic(Characteristic.Saturation)
+    .on('get', this.getSaturation.bind(this))
+    .on('set', this.setSaturation.bind(this));
 }
 
-AwoxAccessory.prototype.getState = function(callback) {
-  this.log("Getting current state...");
-  
-  request.get({
-    url: "https://api.lockitron.com/v2/locks/"+this.lockID,
-    qs: { access_token: this.accessToken }
-  }, function(err, response, body) {
-    
-    if (!err && response.statusCode == 200) {
-      var json = JSON.parse(body);
-      var state = json.state; // "lock" or "unlock"
-      this.log("Lock state is %s", state);
-      var locked = state == "lock"
-      callback(null, locked); // success
-    }
-    else {
-      this.log("Error getting state (status code %s): %s", response.statusCode, err);
-      callback(err);
-    }
-  }.bind(this));
-}
-  
-AwoxAccessory.prototype.setState = function(state, callback) {
-  var lockitronState = (state == Characteristic.LockTargetState.SECURED) ? "lock" : "unlock";
-
-  this.log("Set state to %s", lockitronState);
-
-  request.put({
-    url: "https://api.lockitron.com/v2/locks/"+this.lockID,
-    qs: { access_token: this.accessToken, state: lockitronState }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-      this.log("State change complete.");
-      
-      // we succeeded, so update the "current" state as well
-      var currentState = (state == Characteristic.LockTargetState.SECURED) ?
-        Characteristic.LockCurrentState.SECURED : Characteristic.LockCurrentState.UNSECURED;
-      
-      this.service
-        .setCharacteristic(Characteristic.LockCurrentState, currentState);
-      
-      callback(null); // success
-    }
-    else {
-      this.log("Error '%s' setting lock state. Response: %s", err, body);
-      callback(err || new Error("Error setting lock state."));
-    }
-  }.bind(this));
+AwoxAccessory.prototype.getPower = function(callback) {
+  var powerOn = this.binaryState > 0;
+  this.log("Power state for the '%s' is %s", this.name, this.binaryState);
+  callback(null, powerOn);
 }
 
-AwoxAccessory.prototype.getServices = function() {
-  return [this.service];
+AwoxAccessory.prototype.setPower = function(powerOn, callback) {
+  this.on = !powerOn;
+  const lamp = new AwoxSmartLight(this.lampMac);
+  if(powerOn) {
+    lamp.lightOff();
+  }
+  else {
+    lamp.lightOn();
+  }
+
+  this.log("Set power state on the '%s' to %s", this.bulbName, this.binaryState);
+  callback(null);
+}
+
+AwoxAccessory.prototype.getBrightness = function(callback) {
+    callback(null, this.brightness);
+}
+
+AwoxAccessory.prototype.setBrightness = function(brightness, callback, context) {
+	if(context !== 'fromSetValue') {
+		this.brightness = brightness;
+    const lamp = new AwoxSmartLight(this.lampMac);
+    lamp.lightBrightness(brightness);
+	}
+	callback();
+}
+
+AwoxAccessory.prototype.getHue = function(callback) {
+    callback(null, this.hue);
+}
+
+AwoxAccessory.prototype.setHue = function(hue, callback, context) {
+	if(context !== 'fromSetValue') {
+		this.hue = hue;
+    var rgb = this._hsvToRgb(hue, this.saturation, this.brightness);
+    var r = this._decToHex(rgb.r);
+    var g = this._decToHex(rgb.g);
+    var b = this._decToHex(rgb.b);
+    const lamp = new AwoxSmartLight(this.lampMac);
+    lamp.lightRgb(r, g, b, false);
+	}
+	callback();
+}
+
+AwoxAccessory.prototype.getSaturation = function(callback) {
+    callback(null, this.saturation);
+}
+
+AwoxAccessory.prototype.setSaturation = function(saturation, callback, context) {
+	if(context !== 'fromSetValue') {
+		this.saturation = saturation;
+    const lamp = new AwoxSmartLight(this.lampMac);
+    lamp.lightWhite(saturation);
+	}
+	callback();
+}
+
+AwoxAccessory.prototype._hsvToRgb = function(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+
+    h /= 360;
+    s /= 100;
+    v /= 100;
+
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+    }
+    var rgb = { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+    return rgb;
+}
+
+AwoxAccessory.prototype._decToHex = function(d, padding) {
+    var hex = Number(d).toString(16).toUpperCase();
+    padding = typeof (padding) === 'undefined' || padding === null ? padding = 2 : padding;
+
+    while (hex.length < padding) {
+        hex = '0' + hex;
+    }
+
+    return hex;
+}
+
+FakeBulbAccessory.prototype.getServices = function() {
+    return [lightbulbService];
 }

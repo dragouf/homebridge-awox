@@ -4,7 +4,7 @@
   "description": "control awox smartlight with homebridge",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,17 @@
     "url": "https://github.com/dragouf/homebridge-awox/issues"
   },
   "homepage": "https://github.com/dragouf/homebridge-awox#readme",
+  "engines": {
+    "node": ">=4.4.0",
+    "homebridge": ">=0.3.0"
+  },
   "dependencies": {
-    "noble": "^1.8.1"
+    "noble": "^1.8.1",
+    "promise-retry": "^1.1.1",
+    "promise-timeout": "^1.1.1",
+    "awox-smartlight": "^1.1.7"
+  },
+  "devDependencies": {
+    "standard": "^8.6.0"
   }
 }
