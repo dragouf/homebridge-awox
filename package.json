@@ -1,6 +1,6 @@
 {
   "name": "homebridge-awox",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "control awox smartlight with homebridge",
   "main": "index.js",
   "scripts": {},
