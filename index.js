@@ -32,8 +32,8 @@ function AwoxAccessory(log, config) {
 
   this.service
     .getCharacteristic(Characteristic.On)
-    .on('get', this.getPowerOn.bind(this))
-    .on('set', this.setPowerOn.bind(this));
+    .on('get', this.getPower.bind(this))
+    .on('set', this.setPower.bind(this));
 
   this.service
     .getCharacteristic(Characteristic.Brightness)
