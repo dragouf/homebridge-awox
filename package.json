@@ -26,7 +26,6 @@
     "homebridge": ">=0.3.0"
   },
   "dependencies": {
-    "noble": "^1.8.1",
     "awox-smartlight": "^1.0.5"
   }
 }
