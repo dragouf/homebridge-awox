@@ -148,5 +148,5 @@ AwoxAccessory.prototype._decToHex = function(d, padding) {
 }
 
 AwoxAccessory.prototype.getServices = function() {
-    return [lightbulbService];
+    return [this.service];
 }
