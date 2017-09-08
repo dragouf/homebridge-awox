@@ -22,6 +22,7 @@ function AwoxAccessory(log, config) {
   this.log = log;
   this.config = config || {};
   this.name = config["name"];
+  this.bulbName = config["bulbName"] || config["name"];
   this.lampMac = config["lampMac"];
   this.service = new Service.Lightbulb(this.name);
 
@@ -50,8 +51,8 @@ function AwoxAccessory(log, config) {
 }
 
 AwoxAccessory.prototype.getPower = function(callback) {
-  var powerOn = this.binaryState > 0;
-  this.log("Power state for the '%s' is %s", this.name, this.binaryState);
+  var powerOn = this.on;
+  this.log("Power state for the '%s' is %s", this.name, this.on);
   callback(null, powerOn);
 }
 
@@ -65,7 +66,7 @@ AwoxAccessory.prototype.setPower = function(powerOn, callback) {
     lamp.lightOn();
   }
 
-  this.log("Set power state on the '%s' to %s", this.bulbName, this.binaryState);
+  this.log("Set power state on the '%s' to %s", this.bulbName, this.on);
   callback(null);
 }
 
