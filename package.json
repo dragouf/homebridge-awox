@@ -23,10 +23,9 @@
   },
   "homepage": "https://github.com/dragouf/homebridge-awox#readme",
   "engines": {
-    "node": ">=4.4.0",
     "homebridge": ">=0.3.0"
   },
   "dependencies": {
-    "awox-smartlight": "^1.0.8"
+    "awox-smartlight": "^1.0.9"
   }
 }
