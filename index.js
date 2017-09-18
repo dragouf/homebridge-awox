@@ -51,7 +51,7 @@ function AwoxAccessory(log, config) {
 }
 
 AwoxAccessory.prototype.getPower = function(callback) {
-  var powerOn = this.on;
+  var powerOn = !this.on;
   this.log("Power state for the '%s' is %s", this.name, this.on);
   callback(null, powerOn);
 }
