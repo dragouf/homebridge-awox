@@ -27,9 +27,11 @@ function AwoxAccessory(log, config) {
   this.service = new Service.Lightbulb(this.name);
 
   this.on = false;
-  this.brightness = 0;
+  this.brightness = 100;
   this.hue = 0;
   this.saturation = 0;
+
+  this.lamp = new AwoxSmartLight(this.lampMac, this.log);
 
   this.service
     .getCharacteristic(Characteristic.On)
@@ -51,23 +53,23 @@ function AwoxAccessory(log, config) {
 }
 
 AwoxAccessory.prototype.getPower = function(callback) {
-  var powerOn = !this.on;
   this.log("Power state for the '%s' is %s", this.name, this.on);
-  callback(null, powerOn);
+  callback(null, this.on);
 }
 
 AwoxAccessory.prototype.setPower = function(powerOn, callback) {
-  this.on = !powerOn;
-  const lamp = new AwoxSmartLight(this.lampMac);
+  //var lamp = new AwoxSmartLight(this.lampMac, this.log);
+  this.log("Set power state on the '%s' to %s", this.bulbName, powerOn);
   if(powerOn) {
-    lamp.lightOff();
+    this.lamp.lightOn();
   }
   else {
-    lamp.lightOn();
+    this.lamp.lightOff();
   }
 
-  this.log("Set power state on the '%s' to %s", this.bulbName, this.on);
-  callback(null);
+  this.on = !powerOn;
+
+  callback();
 }
 
 AwoxAccessory.prototype.getBrightness = function(callback) {
@@ -76,9 +78,9 @@ AwoxAccessory.prototype.getBrightness = function(callback) {
 
 AwoxAccessory.prototype.setBrightness = function(brightness, callback, context) {
 	if(context !== 'fromSetValue') {
+    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
 		this.brightness = brightness;
-    const lamp = new AwoxSmartLight(this.lampMac);
-    lamp.lightBrightness(brightness);
+    this.lamp.lightBrightness(brightness);
 	}
 	callback();
 }
@@ -89,13 +91,13 @@ AwoxAccessory.prototype.getHue = function(callback) {
 
 AwoxAccessory.prototype.setHue = function(hue, callback, context) {
 	if(context !== 'fromSetValue') {
+    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
 		this.hue = hue;
     var rgb = this._hsvToRgb(hue, this.saturation, this.brightness);
     var r = this._decToHex(rgb.r);
     var g = this._decToHex(rgb.g);
     var b = this._decToHex(rgb.b);
-    const lamp = new AwoxSmartLight(this.lampMac);
-    lamp.lightRgb(r, g, b, false);
+    this.lamp.lightRgb(r, g, b, false);
 	}
 	callback();
 }
@@ -106,9 +108,9 @@ AwoxAccessory.prototype.getSaturation = function(callback) {
 
 AwoxAccessory.prototype.setSaturation = function(saturation, callback, context) {
 	if(context !== 'fromSetValue') {
+    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
 		this.saturation = saturation;
-    const lamp = new AwoxSmartLight(this.lampMac);
-    lamp.lightWhite(saturation);
+    this.lamp.lightWhite(saturation);
 	}
 	callback();
 }
