@@ -78,9 +78,9 @@ AwoxAccessory.prototype.getBrightness = function(callback) {
 
 AwoxAccessory.prototype.setBrightness = function(brightness, callback, context) {
 	if(context !== 'fromSetValue') {
-    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
+    this.log("set brightness to:" + brightness);
 		this.brightness = brightness;
-    this.lamp.lightBrightness(brightness);
+    this.lamp.lightBrightness(brightness / 100);
 	}
 	callback();
 }
@@ -91,13 +91,13 @@ AwoxAccessory.prototype.getHue = function(callback) {
 
 AwoxAccessory.prototype.setHue = function(hue, callback, context) {
 	if(context !== 'fromSetValue') {
-    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
 		this.hue = hue;
     var rgb = this._hsvToRgb(hue, this.saturation, this.brightness);
-    var r = this._decToHex(rgb.r);
-    var g = this._decToHex(rgb.g);
-    var b = this._decToHex(rgb.b);
-    this.lamp.lightRgb(r, g, b, false);
+    //var r = this._decToHex(rgb.r);
+    //var g = this._decToHex(rgb.g);
+    //var b = this._decToHex(rgb.b);
+    this.lamp.lightRgbReset();
+    this.lamp.lightRgb(rgb.r, rgb.g, rgb.b, false);
 	}
 	callback();
 }
@@ -108,9 +108,10 @@ AwoxAccessory.prototype.getSaturation = function(callback) {
 
 AwoxAccessory.prototype.setSaturation = function(saturation, callback, context) {
 	if(context !== 'fromSetValue') {
-    //var lamp = new AwoxSmartLight(this.lampMac, this.log);
+    this.log("set saturation to:" + saturation);
 		this.saturation = saturation;
-    this.lamp.lightWhite(saturation);
+    //this.lamp.lightWhiteReset();
+    this.lamp.lightWhite(saturation / 100);
 	}
 	callback();
 }
